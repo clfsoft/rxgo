@@ -4,26 +4,31 @@ package observable
 type Observer func(Notification)
 
 // Next delivers a Next notification to this Observer.
-func (ob Observer) Next(val interface{}) {
-	ob(Notification{Value: val, HasValue: true})
+func (sink Observer) Next(val interface{}) {
+	sink(Notification{Value: val, HasValue: true})
 }
 
 // Error delivers an Error notification to this Observer.
-func (ob Observer) Error(err error) {
-	ob(Notification{Value: err, HasError: true})
+func (sink Observer) Error(err error) {
+	sink(Notification{Value: err, HasError: true})
 }
 
 // Complete delivers a Complete notification to this Observer.
-func (ob Observer) Complete() {
-	ob(Notification{})
+func (sink Observer) Complete() {
+	sink(Notification{})
+}
+
+// Notify delivers a notification to this Observer.
+func (sink *Observer) Notify(t Notification) {
+	(*sink)(t)
 }
 
 // NopObserver is an Observer that does nothing.
 var NopObserver Observer = func(Notification) {}
 
-func withFinalizer(ob Observer, finalize func()) Observer {
+func withFinalizer(sink Observer, finalize func()) Observer {
 	return func(t Notification) {
-		t.Observe(ob)
+		sink(t)
 		if t.HasValue {
 			return
 		}

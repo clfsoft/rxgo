@@ -6,8 +6,3 @@ type Notification struct {
 	HasValue bool
 	HasError bool
 }
-
-// Observe delivers this Notification to the specified Observer.
-func (t Notification) Observe(ob Observer) {
-	ob(t)
-}
