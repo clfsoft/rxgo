@@ -8,10 +8,10 @@ import (
 // subscribed, its values, when available, are emitted to the specified
 // Observer.
 type Observable struct {
-	*observableNode
+	*observable
 }
 
-type observableNode struct {
+type observable struct {
 	source Observable
 	op     Operator
 }
@@ -19,7 +19,7 @@ type observableNode struct {
 // Lift creates a new Observable, with this Observable as the source, and
 // the passed Operator defined as the new Observable's Operator.
 func (o Observable) Lift(op Operator) Observable {
-	return Observable{&observableNode{o, op}}
+	return Observable{&observable{o, op}}
 }
 
 // Pipe stitches Operators together into a chain, returns the Observable result

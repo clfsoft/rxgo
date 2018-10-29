@@ -10,10 +10,10 @@ import (
 // will not subscribe the source, instead, it subscribes a local Subject,
 // which means that its can be called many times with different Observers.
 type ConnectableObservable struct {
-	*connectableNode
+	*connectableObservable
 }
 
-type connectableNode struct {
+type connectableObservable struct {
 	mu             sync.Mutex
 	source         Observable
 	subjectFactory func() *Subject
@@ -23,20 +23,20 @@ type connectableNode struct {
 	refCount       int
 }
 
-func (o *connectableNode) getSubjectLocked() *Subject {
+func (o *connectableObservable) getSubjectLocked() *Subject {
 	if o.subject == nil {
 		o.subject = o.subjectFactory()
 	}
 	return o.subject
 }
 
-func (o *connectableNode) getSubject() *Subject {
+func (o *connectableObservable) getSubject() *Subject {
 	o.mu.Lock()
 	defer o.mu.Unlock()
 	return o.getSubjectLocked()
 }
 
-func (o *connectableNode) doConnect(addRef bool) (context.Context, context.CancelFunc) {
+func (o *connectableObservable) doConnect(addRef bool) (context.Context, context.CancelFunc) {
 	var try *cancellableLocker
 
 	o.mu.Lock()
@@ -136,7 +136,7 @@ func (o *connectableNode) doConnect(addRef bool) (context.Context, context.Cance
 	}
 }
 
-func (o *connectableNode) connectAddRef() (context.Context, context.CancelFunc) {
+func (o *connectableObservable) connectAddRef() (context.Context, context.CancelFunc) {
 	return o.doConnect(true)
 }
 
@@ -181,7 +181,7 @@ func (o ConnectableObservable) RefCount() Observable {
 // items to those Observers that have subscribed to it.
 func (o Observable) Publish() ConnectableObservable {
 	subject := NewSubject()
-	return ConnectableObservable{&connectableNode{
+	return ConnectableObservable{&connectableObservable{
 		source:         o,
 		subjectFactory: func() *Subject { return subject },
 	}}
@@ -190,7 +190,7 @@ func (o Observable) Publish() ConnectableObservable {
 // PublishBehavior is like Publish, but it uses a BehaviorSubject instead.
 func (o Observable) PublishBehavior(val interface{}) ConnectableObservable {
 	bs := NewBehaviorSubject(val)
-	return ConnectableObservable{&connectableNode{
+	return ConnectableObservable{&connectableObservable{
 		source:         o,
 		subjectFactory: func() *Subject { return &bs.Subject },
 	}}
@@ -200,7 +200,7 @@ func (o Observable) PublishBehavior(val interface{}) ConnectableObservable {
 // won't subscribe the source Observable twice before the previous subscription
 // finishes.
 func (o Observable) Share() Observable {
-	connectable := ConnectableObservable{&connectableNode{
+	connectable := ConnectableObservable{&connectableObservable{
 		source:         o,
 		subjectFactory: NewSubject,
 	}}
