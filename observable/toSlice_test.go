@@ -1,7 +1,6 @@
 package observable_test
 
 import (
-	"fmt"
 	"testing"
 
 	. "github.com/b97tsk/rxgo/observable"
@@ -18,11 +17,7 @@ func TestOperators_ToSlice(t *testing.T) {
 		observables[i] = obs.Pipe(
 			operators.ToSlice(),
 			operators.Single(),
-			operators.Map(
-				func(val interface{}, idx int) interface{} {
-					return fmt.Sprint(val)
-				},
-			),
+			toString,
 		)
 	}
 	subscribe(
