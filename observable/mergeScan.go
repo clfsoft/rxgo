@@ -7,20 +7,21 @@ import (
 	"github.com/b97tsk/rxgo/queue"
 )
 
-// MergeScanOperator is an operator type.
-type MergeScanOperator struct {
+// MergeScanConfig is the configuration type for MergeScan.
+type MergeScanConfig struct {
 	Accumulator func(interface{}, interface{}) Observable
 	Seed        interface{}
 	Concurrent  int
 }
 
-// MakeFunc creates an OperatorFunc from this operator.
-func (op MergeScanOperator) MakeFunc() OperatorFunc {
-	return MakeFunc(op.Call)
+// MakeFunc creates an OperatorFunc from this type.
+func (conf MergeScanConfig) MakeFunc() OperatorFunc {
+	return MakeFunc(mergeScanOperator(conf).Call)
 }
 
-// Call invokes an execution of this operator.
-func (op MergeScanOperator) Call(ctx context.Context, sink Observer, source Observable) (context.Context, context.CancelFunc) {
+type mergeScanOperator MergeScanConfig
+
+func (op mergeScanOperator) Call(ctx context.Context, sink Observer, source Observable) (context.Context, context.CancelFunc) {
 	ctx, cancel := context.WithCancel(ctx)
 
 	sink = Mutex(Finally(sink, cancel))
@@ -115,7 +116,7 @@ func (op MergeScanOperator) Call(ctx context.Context, sink Observer, source Obse
 // into the outer Observable.
 func (Operators) MergeScan(accumulator func(interface{}, interface{}) Observable, seed interface{}) OperatorFunc {
 	return func(source Observable) Observable {
-		op := MergeScanOperator{accumulator, seed, -1}
+		op := mergeScanOperator{accumulator, seed, -1}
 		return source.Lift(op.Call)
 	}
 }

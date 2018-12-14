@@ -5,20 +5,21 @@ import (
 	"time"
 )
 
-// ThrottleTimeOperator is an operator type.
-type ThrottleTimeOperator struct {
+// ThrottleTimeConfig is the configuration type for ThrottleTime.
+type ThrottleTimeConfig struct {
 	Duration time.Duration
 	Leading  bool
 	Trailing bool
 }
 
-// MakeFunc creates an OperatorFunc from this operator.
-func (op ThrottleTimeOperator) MakeFunc() OperatorFunc {
-	return MakeFunc(op.Call)
+// MakeFunc creates an OperatorFunc from this type.
+func (conf ThrottleTimeConfig) MakeFunc() OperatorFunc {
+	return MakeFunc(throttleTimeOperator(conf).Call)
 }
 
-// Call invokes an execution of this operator.
-func (op ThrottleTimeOperator) Call(ctx context.Context, sink Observer, source Observable) (context.Context, context.CancelFunc) {
+type throttleTimeOperator ThrottleTimeConfig
+
+func (op throttleTimeOperator) Call(ctx context.Context, sink Observer, source Observable) (context.Context, context.CancelFunc) {
 	ctx, cancel := context.WithCancel(ctx)
 
 	sink = Finally(sink, cancel)
@@ -90,7 +91,7 @@ func (op ThrottleTimeOperator) Call(ctx context.Context, sink Observer, source O
 // duration time.
 func (Operators) ThrottleTime(duration time.Duration) OperatorFunc {
 	return func(source Observable) Observable {
-		op := ThrottleTimeOperator{
+		op := throttleTimeOperator{
 			Duration: duration,
 			Leading:  true,
 			Trailing: false,

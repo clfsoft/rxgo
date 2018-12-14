@@ -7,19 +7,20 @@ import (
 	"github.com/b97tsk/rxgo/queue"
 )
 
-// MergeOperator is an operator type.
-type MergeOperator struct {
+// MergeConfig is the configuration type for Merge.
+type MergeConfig struct {
 	Project    func(interface{}, int) Observable
 	Concurrent int
 }
 
-// MakeFunc creates an OperatorFunc from this operator.
-func (op MergeOperator) MakeFunc() OperatorFunc {
-	return MakeFunc(op.Call)
+// MakeFunc creates an OperatorFunc from this type.
+func (conf MergeConfig) MakeFunc() OperatorFunc {
+	return MakeFunc(mergeOperator(conf).Call)
 }
 
-// Call invokes an execution of this operator.
-func (op MergeOperator) Call(ctx context.Context, sink Observer, source Observable) (context.Context, context.CancelFunc) {
+type mergeOperator MergeConfig
+
+func (op mergeOperator) Call(ctx context.Context, sink Observer, source Observable) (context.Context, context.CancelFunc) {
 	ctx, cancel := context.WithCancel(ctx)
 
 	sink = Mutex(Finally(sink, cancel))
@@ -115,7 +116,7 @@ func (Operators) MergeAll() OperatorFunc {
 // Observables using MergeAll.
 func (Operators) MergeMap(project func(interface{}, int) Observable) OperatorFunc {
 	return func(source Observable) Observable {
-		op := MergeOperator{project, -1}
+		op := mergeOperator{project, -1}
 		return source.Lift(op.Call)
 	}
 }
