@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	. "github.com/b97tsk/rxgo/observable"
+	"github.com/b97tsk/rxgo/observable"
 )
 
 func Example() {
-	var operators Operators
+	var operators observable.Operators
 
-	Range(1, 10).Pipe(
+	observable.Range(1, 10).Pipe(
 		operators.Filter(
 			func(val interface{}, idx int) bool {
 				return val.(int)%2 == 1
@@ -22,7 +22,7 @@ func Example() {
 			},
 		),
 		operators.Do(
-			func(t Notification) {
+			func(t observable.Notification) {
 				switch {
 				case t.HasValue:
 					fmt.Println(t.Value)
@@ -33,7 +33,7 @@ func Example() {
 				}
 			},
 		),
-	).Subscribe(context.Background(), NopObserver)
+	).Subscribe(context.Background(), observable.NopObserver)
 
 	// Output:
 	// 2
