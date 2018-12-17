@@ -7,7 +7,7 @@ type Notification struct {
 	HasError bool
 }
 
-// Observe delivers this Notification to the specified Observer.
+// Observe delivers this notification to the specified Observer.
 func (t Notification) Observe(sink Observer) {
 	sink(t)
 }

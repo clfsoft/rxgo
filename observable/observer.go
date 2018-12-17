@@ -3,17 +3,17 @@ package observable
 // An Observer is a consumer of notifications delivered by an Observable.
 type Observer func(Notification)
 
-// Next delivers a Next notification to this Observer.
+// Next delivers a NEXT notification to this Observer.
 func (sink Observer) Next(val interface{}) {
 	sink(Notification{Value: val, HasValue: true})
 }
 
-// Error delivers an Error notification to this Observer.
+// Error delivers an ERROR notification to this Observer.
 func (sink Observer) Error(err error) {
 	sink(Notification{Value: err, HasError: true})
 }
 
-// Complete delivers a Complete notification to this Observer.
+// Complete delivers a COMPLETE notification to this Observer.
 func (sink Observer) Complete() {
 	sink(Notification{})
 }
